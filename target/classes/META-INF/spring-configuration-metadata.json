@@ -1,0 +1,53 @@
+{
+  "groups": [
+    {
+      "name": "ai.observer",
+      "type": "io.boot.ai.observer.config.AiObserverProperties",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "ai.observer.anthropic-api-key",
+      "type": "java.lang.String",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties"
+    },
+    {
+      "name": "ai.observer.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "ai.observer.interval-seconds",
+      "type": "java.lang.Long",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties",
+      "defaultValue": 900
+    },
+    {
+      "name": "ai.observer.max-tokens",
+      "type": "java.lang.Integer",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties",
+      "defaultValue": 1024
+    },
+    {
+      "name": "ai.observer.model",
+      "type": "java.lang.String",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties"
+    },
+    {
+      "name": "ai.observer.prompt",
+      "type": "io.boot.ai.observer.config.PromptProperties",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties"
+    },
+    {
+      "name": "ai.observer.thresholds",
+      "type": "io.boot.ai.observer.config.ThresholdsProperties",
+      "sourceType": "io.boot.ai.observer.config.AiObserverProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}
