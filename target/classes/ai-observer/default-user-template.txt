@@ -1,5 +1,0 @@
-Runtime snapshot from a Spring Boot application:
-
-{snapshot}
-
-Return a JSON array of insights only.

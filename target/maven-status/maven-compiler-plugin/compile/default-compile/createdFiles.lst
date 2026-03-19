@@ -1,4 +1,0 @@
-META-INF/spring-configuration-metadata.json
-io/boot/ai/observer/config/PromptProperties.class
-io/boot/ai/observer/config/ThresholdsProperties.class
-io/boot/ai/observer/config/AiObserverProperties.class
