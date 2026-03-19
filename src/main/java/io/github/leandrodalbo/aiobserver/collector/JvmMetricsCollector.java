@@ -1,5 +1,6 @@
 package io.github.leandrodalbo.aiobserver.collector;
 
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
@@ -66,6 +67,6 @@ public class JvmMetricsCollector {
             search = search.tag("area", areaTag);
         }
         var gauges = search.gauges();
-        return gauges.stream().mapToDouble(g -> g.value()).sum();
+        return gauges.stream().mapToDouble(Gauge::value).sum();
     }
 }

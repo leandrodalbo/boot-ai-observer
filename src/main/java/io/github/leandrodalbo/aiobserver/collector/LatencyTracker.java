@@ -19,8 +19,8 @@ public class LatencyTracker {
     }
 
     public Map<String, EndpointStats> getAndReset() {
-        Map<String, List<Long>> snapshot = new HashMap<>(latencySamples);
-        latencySamples.clear();
+        Map<String, List<Long>> snapshot = new HashMap<>();
+        latencySamples.forEach((key, value) -> snapshot.put(key, latencySamples.remove(key)));
 
         Map<String, EndpointStats> result = new HashMap<>();
         for (Map.Entry<String, List<Long>> entry : snapshot.entrySet()) {
