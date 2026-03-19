@@ -1,0 +1,108 @@
+{
+  "groups": [
+    {
+      "name": "ai.observer",
+      "type": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties"
+    },
+    {
+      "name": "ai.observer.prompt",
+      "type": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Prompt",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties",
+      "sourceMethod": "getPrompt()"
+    },
+    {
+      "name": "ai.observer.thresholds",
+      "type": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Thresholds",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties",
+      "sourceMethod": "getThresholds()"
+    },
+    {
+      "name": "management.endpoint.ai-insights",
+      "type": "io.github.leandrodalbo.aiobserver.actuator.AiInsightsEndpoint",
+      "sourceType": "io.github.leandrodalbo.aiobserver.actuator.AiInsightsEndpoint"
+    }
+  ],
+  "properties": [
+    {
+      "name": "ai.observer.anthropic-api-key",
+      "type": "java.lang.String",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties"
+    },
+    {
+      "name": "ai.observer.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "ai.observer.interval-seconds",
+      "type": "java.lang.Long",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties",
+      "defaultValue": 300
+    },
+    {
+      "name": "ai.observer.max-tokens",
+      "type": "java.lang.Integer",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties",
+      "defaultValue": 1024
+    },
+    {
+      "name": "ai.observer.model",
+      "type": "java.lang.String",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties",
+      "defaultValue": "claude-haiku-4-5-20251001"
+    },
+    {
+      "name": "ai.observer.prompt.extra-context",
+      "type": "java.lang.String",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Prompt",
+      "defaultValue": ""
+    },
+    {
+      "name": "ai.observer.prompt.system-prompt",
+      "type": "java.lang.String",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Prompt",
+      "defaultValue": "You are a JVM and Spring Boot performance expert.\nAnalyze the provided runtime snapshot and return ONLY a JSON array of insights.\nFocus on correlations between metrics, not isolated thresholds.\nEach insight: {\"level\":\"INFO|WARNING|CRITICAL\",\"message\":\"...\",\"recommendation\":\"...\"}\nBe specific. Never say \"consider increasing heap\" without a concrete reason.\nReturn [] if everything looks healthy.\n"
+    },
+    {
+      "name": "ai.observer.prompt.user-template",
+      "type": "java.lang.String",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Prompt",
+      "defaultValue": "Runtime snapshot from a Spring Boot application:\n{snapshot}\n\nReturn JSON insights only."
+    },
+    {
+      "name": "ai.observer.thresholds.error-rate-percent",
+      "type": "java.lang.Double",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Thresholds",
+      "defaultValue": 5
+    },
+    {
+      "name": "ai.observer.thresholds.heap-usage-percent",
+      "type": "java.lang.Double",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Thresholds",
+      "defaultValue": 80
+    },
+    {
+      "name": "ai.observer.thresholds.thread-count",
+      "type": "java.lang.Integer",
+      "sourceType": "io.github.leandrodalbo.aiobserver.config.AiObserverProperties$Thresholds",
+      "defaultValue": 200
+    },
+    {
+      "name": "management.endpoint.ai-insights.cache.time-to-live",
+      "type": "java.time.Duration",
+      "description": "Maximum time that a response can be cached.",
+      "sourceType": "io.github.leandrodalbo.aiobserver.actuator.AiInsightsEndpoint",
+      "defaultValue": "0ms"
+    },
+    {
+      "name": "management.endpoint.ai-insights.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable the ai-insights endpoint.",
+      "sourceType": "io.github.leandrodalbo.aiobserver.actuator.AiInsightsEndpoint",
+      "defaultValue": true
+    }
+  ],
+  "hints": []
+}

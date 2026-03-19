@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: ai-observer-example
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,ai-insights
+  endpoint:
+    health:
+      show-details: always
+
+ai:
+  observer:
+    anthropic-api-key: ${ANTHROPIC_API_KEY:}
+    model: claude-haiku-4-5-20251001
+    interval-seconds: 300
+    max-tokens: 1024
+    thresholds:
+      heap-usage-percent: 80.0
+      thread-count: 200
+      error-rate-percent: 5.0
+    prompt:
+      extra-context: |
+        This is an example Spring Boot application for demonstrating AI Observer.
+        It has endpoints that simulate memory leaks, slow responses, and errors.
