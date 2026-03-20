@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.3</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>io.boot.ai.observer</groupId>
 	<artifactId>boot.ai.observer</artifactId>
@@ -53,6 +53,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webflux</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
@@ -73,9 +85,6 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
-			<!-- spring-boot-maven-plugin intentionally omitted:
-			     this is a library/starter, not an executable app.
-			     Repackaging would break it as a dependency. -->
 		</plugins>
 	</build>
 
