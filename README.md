@@ -85,7 +85,7 @@
 
 ### Block 2 — Models
 
-- [x] Create `RuntimeSnapshot.java`:
+- [] Create `RuntimeSnapshot.java`:
 
   ```java
   public record RuntimeSnapshot(
@@ -120,7 +120,7 @@
 
 ### Block 3 — Metrics Collector
 
-- [ ] Create `JvmMetricsCollector.java` — use Micrometer's `MeterRegistry`, not raw MXBeans:
+- [x] Create `JvmMetricsCollector.java` — use Micrometer's `MeterRegistry`, not raw MXBeans:
 
   ```java
   @Component
