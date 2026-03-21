@@ -1,6 +1,6 @@
-package io.boot.ai.observer.request;
+package io.boot.ai.observer.webfilters;
 
-import io.boot.ai.observer.collector.LatencyTracker;
+import io.boot.ai.observer.collector.latency.WebLatencyCollector;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,14 +9,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-public class RequestMonitoringFilter extends OncePerRequestFilter {
+public class ServletRequestMonitoringFilter extends OncePerRequestFilter {
 
     private static final String ACTUATOR_PREFIX = "/actuator";
 
-    private final LatencyTracker latencyTracker;
+    private final WebLatencyCollector latencyCollector;
 
-    public RequestMonitoringFilter(LatencyTracker latencyTracker) {
-        this.latencyTracker = latencyTracker;
+    public ServletRequestMonitoringFilter(WebLatencyCollector latencyCollector) {
+        this.latencyCollector = latencyCollector;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class RequestMonitoringFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } finally {
-            latencyTracker.recordLatency(path, System.currentTimeMillis() - start);
+            latencyCollector.record(path, System.currentTimeMillis() - start);
         }
     }
 }

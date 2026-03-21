@@ -1,4 +1,4 @@
-package io.boot.ai.observer.collector;
+package io.boot.ai.observer.collector.latency;
 
 import io.boot.ai.observer.model.EndpointStats;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,30 +12,33 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-class LatencyTrackerTest {
+class WebLatencyCollectorTest {
 
-    private LatencyTracker tracker =  new LatencyTracker();;
+    private WebLatencyCollector collector;
+
+    @BeforeEach
+    void setUp() {
+        collector = new WebLatencyCollector();
+    }
 
     @Test
-    void recordLatency_singleSample_producesCorrectStats() {
-        tracker.recordLatency("/api/orders", 100L);
+    void record_singleSample_producesCorrectStats() {
+        collector.record("/api/orders", 100L);
 
-        Map<String, EndpointStats> result = tracker.getAndReset();
+        EndpointStats stats = collector.getAndReset().get("/api/orders");
 
-        assertThat(result).containsKey("/api/orders");
-        EndpointStats stats = result.get("/api/orders");
         assertThat(stats.avgLatencyMs()).isCloseTo(100.0, within(0.01));
         assertThat(stats.maxLatencyMs()).isCloseTo(100.0, within(0.01));
         assertThat(stats.requestCount()).isEqualTo(1);
     }
 
     @Test
-    void recordLatency_multipleSamples_computesAvgAndMax() {
-        tracker.recordLatency("/api/orders", 100L);
-        tracker.recordLatency("/api/orders", 200L);
-        tracker.recordLatency("/api/orders", 300L);
+    void record_multipleSamples_computesAvgAndMax() {
+        collector.record("/api/orders", 100L);
+        collector.record("/api/orders", 200L);
+        collector.record("/api/orders", 300L);
 
-        EndpointStats stats = tracker.getAndReset().get("/api/orders");
+        EndpointStats stats = collector.getAndReset().get("/api/orders");
 
         assertThat(stats.avgLatencyMs()).isCloseTo(200.0, within(0.01));
         assertThat(stats.maxLatencyMs()).isCloseTo(300.0, within(0.01));
@@ -43,11 +46,11 @@ class LatencyTrackerTest {
     }
 
     @Test
-    void recordLatency_multiplePaths_tracksEachPathIndependently() {
-        tracker.recordLatency("/api/orders", 100L);
-        tracker.recordLatency("/api/users", 50L);
+    void record_multiplePaths_tracksEachPathIndependently() {
+        collector.record("/api/orders", 100L);
+        collector.record("/api/users", 50L);
 
-        Map<String, EndpointStats> result = tracker.getAndReset();
+        Map<String, EndpointStats> result = collector.getAndReset();
 
         assertThat(result).hasSize(2);
         assertThat(result.get("/api/orders").requestCount()).isEqualTo(1);
@@ -56,21 +59,20 @@ class LatencyTrackerTest {
 
     @Test
     void getAndReset_clearsStore_subsequentCallReturnsEmpty() {
-        tracker.recordLatency("/api/orders", 100L);
+        collector.record("/api/orders", 100L);
 
-        tracker.getAndReset();
-        Map<String, EndpointStats> second = tracker.getAndReset();
+        collector.getAndReset();
 
-        assertThat(second).isEmpty();
+        assertThat(collector.getAndReset()).isEmpty();
     }
 
     @Test
     void getAndReset_afterReset_newSamplesAreTracked() {
-        tracker.recordLatency("/api/orders", 100L);
-        tracker.getAndReset();
+        collector.record("/api/orders", 100L);
+        collector.getAndReset();
 
-        tracker.recordLatency("/api/orders", 999L);
-        EndpointStats stats = tracker.getAndReset().get("/api/orders");
+        collector.record("/api/orders", 999L);
+        EndpointStats stats = collector.getAndReset().get("/api/orders");
 
         assertThat(stats.avgLatencyMs()).isCloseTo(999.0, within(0.01));
         assertThat(stats.requestCount()).isEqualTo(1);
@@ -78,12 +80,12 @@ class LatencyTrackerTest {
 
     @Test
     void getAndReset_emptyStore_returnsEmptyMap() {
-        assertThat(tracker.getAndReset()).isEmpty();
+        assertThat(collector.getAndReset()).isEmpty();
     }
 
     @Test
-    void recordLatency_concurrentWrites_noSamplesLost() throws InterruptedException {
-        int threadCount = 10;
+    void record_concurrentWrites_noSamplesLost() throws InterruptedException {
+        int threadCount      = 10;
         int samplesPerThread = 100;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
@@ -91,7 +93,7 @@ class LatencyTrackerTest {
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 for (int j = 0; j < samplesPerThread; j++) {
-                    tracker.recordLatency("/api/orders", 100L);
+                    collector.record("/api/orders", 100L);
                 }
                 latch.countDown();
             });
@@ -100,7 +102,7 @@ class LatencyTrackerTest {
         latch.await();
         executor.shutdown();
 
-        EndpointStats stats = tracker.getAndReset().get("/api/orders");
+        EndpointStats stats = collector.getAndReset().get("/api/orders");
         assertThat(stats.requestCount()).isEqualTo(threadCount * samplesPerThread);
     }
 }

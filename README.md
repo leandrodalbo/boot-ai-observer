@@ -138,7 +138,7 @@
 
   > Why Micrometer: metrics are already collected, you're just reading them. Zero overhead.
 
-- [ ] Create `LatencyTracker.java` — in-memory concurrent store, cleaned on each snapshot:
+- [x] Create `LatencyTracker.java` — in-memory concurrent store, cleaned on each snapshot:
 
   ```java
   @Component
@@ -149,7 +149,7 @@
   }
   ```
 
-- [ ] Create `RequestMonitoringFilter.java`:
+- [x] Create `RequestMonitoringFilter.java`:
 
   ```java
   @Component
@@ -161,7 +161,7 @@
   }
   ```
 
-- [ ] Create `ErrorTracker.java` — AOP, not ControllerAdvice:
+- [x] Create `ErrorTracker.java` — AOP, not ControllerAdvice:
   ```java
   @Aspect
   @Component

@@ -1,1 +1,3 @@
 io.boot.ai.observer.config.AiObserverAutoConfiguration
+io.boot.ai.observer.autoconfiguration.CollectorConfiguration
+io.boot.ai.observer.autoconfiguration.WebFiltersConfiguration
