@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,16 +27,23 @@ public abstract class AIObserverClient
     protected final AIObserverSerializer serializer;
     protected final AIObserverProperties props;
 
-    private static final String FAILED_TEXT = "AI analysis unavailable";
+    private static final String   FAILED_TEXT      = "AI analysis unavailable";
+    protected static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
 
     protected AIObserverClient(ObjectMapper mapper, AIObserverSerializer serializer, AIObserverProperties props) {
         this.mapper     = mapper;
         this.serializer = serializer;
         this.props      = props;
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(REQUEST_TIMEOUT)
+                .build();
     }
 
     public CompletableFuture<AIObserverInsight> analyze(AIObserverRuntimeSnapshot snapshot) {
+        if (props.aiApiKey() == null || props.aiApiKey().isBlank()) {
+            AIObserverLog.STARTUP_NO_API_KEY.warn(log);
+            return CompletableFuture.completedFuture(new AIObserverInsight(FAILED_TEXT, Instant.now()));
+        }
         try {
             return httpClient.sendAsync(buildRequest(snapshot), HttpResponse.BodyHandlers.ofString())
                     .thenApply(this::parseResponse)

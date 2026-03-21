@@ -33,6 +33,7 @@ public class AIObserverClaudeClient extends AIObserverClient
     protected HttpRequest buildRequest(AIObserverRuntimeSnapshot snapshot) throws Exception {
         return HttpRequest.newBuilder()
                 .uri(URI.create(Objects.requireNonNullElse(props.aiApiUrl(), DEFAULT_URL)))
+                .timeout(REQUEST_TIMEOUT)
                 .header(HEADER_API_KEY,                              props.aiApiKey())
                 .header(HEADER_VERSION,                              Objects.requireNonNullElse(props.aiApiVersion(), DEFAULT_VERSION))
                 .header(AIObserverClientConstants.HEADER_CONTENT_TYPE.value(), AIObserverClientConstants.HEADER_JSON.value())
