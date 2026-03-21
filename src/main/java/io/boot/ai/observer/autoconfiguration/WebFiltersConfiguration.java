@@ -20,17 +20,15 @@ public class WebFiltersConfiguration
 
     @ConditionalOnClass(OncePerRequestFilter.class)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    @ConditionalOnProperty(prefix = "ai.observer", name = "enabled", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "ai.observer.collectors", name = "latency-enabled", matchIfMissing = true)
     @Bean
     public ServletRequestMonitoringFilter servletRequestMonitoringFilter(WebLatencyCollector latencyCollector) {
         return new ServletRequestMonitoringFilter(latencyCollector);
     }
 
-
-
     @ConditionalOnClass({WebFilter.class, ServerWebExchange.class})
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    @ConditionalOnProperty(prefix = "ai.observer", name = "enabled", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "ai.observer.collectors", name = "latency-enabled", matchIfMissing = true)
     @Bean
     public ReactiveRequestMonitoringFilter reactiveRequestMonitoringFilter(WebLatencyCollector latencyCollector,
                                                                            ErrorCollector errorCollector) {

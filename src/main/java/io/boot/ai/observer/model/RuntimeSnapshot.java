@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 public record RuntimeSnapshot(
-
         Instant capturedAt,
         double heapUsedPercent,
         long heapUsedMb,
@@ -18,5 +17,4 @@ public record RuntimeSnapshot(
         Map<String, EndpointStats> endpoints,
         List<String> recentErrors,
         int errorCount
-
 ) {}

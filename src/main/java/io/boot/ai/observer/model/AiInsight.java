@@ -7,5 +7,4 @@ public record AiInsight(
         String message,
         String recommendation,
         Instant generatedAt
-
 ) {}
