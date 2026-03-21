@@ -1,0 +1,155 @@
+package io.boot.ai.observer.aiclient;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.boot.ai.observer.config.AIObserverProperties;
+import io.boot.ai.observer.config.AIObserverProvider;
+import io.boot.ai.observer.config.AIObserverCollectorsProperties;
+import io.boot.ai.observer.config.AIObserverPromptProperties;
+import io.boot.ai.observer.config.AIObserverThresholdsProperties;
+import io.boot.ai.observer.model.AIObserverRuntimeSnapshot;
+import io.boot.ai.observer.utils.AIObserverPrompts;
+import io.boot.ai.observer.utils.AIObserverSerializer;
+import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class AIObserverClaudeClientTest {
+
+    private static final ObjectMapper MAPPER        = new ObjectMapper();
+    private static final String       INTRO         = "You are monitoring a fintech app.";
+    private static final String       EXTRA_CONTEXT = "Focus on latency during peak hours.";
+
+    @Test
+    void buildSystemPrompt_withNoIntro_returnsResponseFormatOnly() {
+        assertThat(client(null, null).buildSystemPrompt())
+                .isEqualTo(AIObserverPrompts.RESPONSE_FORMAT.text());
+    }
+
+    @Test
+    void buildSystemPrompt_withBlankIntro_returnsResponseFormatOnly() {
+        assertThat(client("   ", null).buildSystemPrompt())
+                .isEqualTo(AIObserverPrompts.RESPONSE_FORMAT.text());
+    }
+
+    @Test
+    void buildSystemPrompt_withIntro_prependsIntroBeforeResponseFormat() {
+        String result = client(INTRO, null).buildSystemPrompt();
+
+        assertThat(result).startsWith(INTRO);
+        assertThat(result).contains(AIObserverPrompts.RESPONSE_FORMAT.text());
+    }
+
+    @Test
+    void buildSystemPrompt_intro_isTrimmed() {
+        assertThat(client("  " + INTRO + "  ", null).buildSystemPrompt())
+                .startsWith(INTRO);
+    }
+
+    @Test
+    void buildUserMessage_containsSnapshotJson() {
+        String result = client(null, null).buildUserMessage(emptySnapshot());
+
+        assertThat(result).contains("heapUsedMb");
+        assertThat(result).doesNotContain("{snapshot}");
+    }
+
+    @Test
+    void buildUserMessage_withNoExtraContext_usesSnapshotTemplateOnly() {
+        assertThat(client(null, null).buildUserMessage(emptySnapshot()))
+                .doesNotContain(EXTRA_CONTEXT);
+    }
+
+    @Test
+    void buildUserMessage_withExtraContext_appendsAfterSnapshot() {
+        String result = client(null, EXTRA_CONTEXT).buildUserMessage(emptySnapshot());
+
+        assertThat(result).contains("heapUsedMb");
+        assertThat(result).endsWith(EXTRA_CONTEXT);
+    }
+
+    @Test
+    void buildUserMessage_extraContext_isTrimmed() {
+        assertThat(client(null, "  " + EXTRA_CONTEXT + "  ").buildUserMessage(emptySnapshot()))
+                .endsWith(EXTRA_CONTEXT);
+    }
+
+    @Test
+    void buildRequestBody_containsModelAndMaxTokens() throws Exception {
+        JsonNode body = MAPPER.readTree(client(null, null).buildRequestBody(emptySnapshot()));
+
+        assertThat(body.get("model").asText()).isEqualTo("claude-haiku-4-5-20251001");
+        assertThat(body.get("max_tokens").asInt()).isEqualTo(1024);
+    }
+
+    @Test
+    void buildRequestBody_systemPromptContainsResponseFormat() throws Exception {
+        JsonNode body = MAPPER.readTree(client(null, null).buildRequestBody(emptySnapshot()));
+
+        assertThat(body.get("system").asText()).contains(AIObserverPrompts.RESPONSE_FORMAT.text());
+    }
+
+    @Test
+    void buildRequestBody_containsUserMessageWithRole() throws Exception {
+        JsonNode body    = MAPPER.readTree(client(null, null).buildRequestBody(emptySnapshot()));
+        JsonNode message = body.get("messages").get(0);
+
+        assertThat(message.get("role").asText()).isEqualTo("user");
+        assertThat(message.get("content").asText()).contains("heapUsedMb");
+    }
+
+    @Test
+    void extractText_extractsTextFromClaudeEnvelope() throws Exception {
+        String response = """
+                {"content":[{"type":"text","text":"CPU usage is elevated."}],"model":"claude-haiku","stop_reason":"end_turn"}
+                """;
+
+        assertThat(client(null, null).extractText(response)).isEqualTo("CPU usage is elevated.");
+    }
+
+    @Test
+    void extractText_missingContentField_returnsEmptyString() throws Exception {
+        String response = """
+                {"model":"claude-haiku","stop_reason":"end_turn"}
+                """;
+
+        assertThat(client(null, null).extractText(response)).isEmpty();
+    }
+
+    @Test
+    void extractText_emptyContentArray_returnsEmptyString() throws Exception {
+        String response = """
+                {"content":[],"model":"claude-haiku"}
+                """;
+
+        assertThat(client(null, null).extractText(response)).isEmpty();
+    }
+
+    private AIObserverClaudeClient client(String intro, String extraContext) {
+        AIObserverProperties props = new AIObserverProperties(
+                true,
+                AIObserverProvider.CLAUDE,
+                "test-api-key",
+                "claude-haiku-4-5-20251001",
+                null,
+                null,
+                1024,
+                900L,
+                new AIObserverThresholdsProperties(80.0, 200, 5.0),
+                new AIObserverPromptProperties(intro, extraContext),
+                new AIObserverCollectorsProperties(true, true, true)
+        );
+        return new AIObserverClaudeClient(MAPPER, new AIObserverSerializer(MAPPER), props);
+    }
+
+    private AIObserverRuntimeSnapshot emptySnapshot() {
+        return new AIObserverRuntimeSnapshot(
+                Instant.now(), 0.0, 0L, 0L, 0, 0, 0.0, 0L, 0L,
+                Map.of(), List.of(), 0
+        );
+    }
+}

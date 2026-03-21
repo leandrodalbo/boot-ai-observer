@@ -141,12 +141,3 @@
 - [ ] Claude API failure has zero impact on the host app
 
 ---
-
-## Hard Limits
-
-- No database, no file storage, no extra dependencies beyond Spring Boot
-- No multi-module Maven
-- No UI — the actuator endpoint is the UI
-- No Slack/email alerting — post-MVP
-- No bytecode instrumentation — too complex
-- Insights are best-effort — failure = logged warning, never an exception

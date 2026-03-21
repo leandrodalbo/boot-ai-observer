@@ -12,24 +12,56 @@ spring:
 ai:
   observer:
 
-    # Required. Set via environment variable — never hardcode.
-    anthropic-api-key: ${ANTHROPIC_API_KEY:}
-
-    # Required. No default — you must choose a model explicitly.
-    # claude-haiku-4-5-20251001   cheapest and fast, good for routine monitoring
-    # claude-sonnet-4-6           more capable, better for complex correlations
-    model: claude-haiku-4-5-20251001
-
-    # Set to false to disable without removing the dependency (e.g. in CI pipelines).
+    # Set to false to disable AI Observer entirely without removing the dependency.
+    # Useful for CI pipelines or environments where AI analysis is not wanted.
     enabled: true
 
-    # Max tokens in the AI response. 1024 is plenty for a JSON insight array.
+    # Required. The AI provider to use. The starter will not start if missing or invalid.
+    # Accepted values: claude, openai, copilot
+    ai-provider: claude
+
+    # Required. Your API key for the chosen provider.
+    # Always inject via environment variable — never hardcode in source.
+    #
+    #   claude  → ANTHROPIC_API_KEY
+    #   openai  → OPENAI_API_KEY
+    #   copilot → GITHUB_TOKEN
+    ai-api-key: ${AI_API_KEY:}
+
+    # Optional. Override the model. Each provider has a sensible default:
+    #   claude  → claude-haiku-4-5-20251001
+    #   openai  → gpt-4o-mini
+    #   copilot → gpt-4o
+    # ai-model: claude-sonnet-4-6
+
+    # Optional. Override the API endpoint URL.
+    # Use for proxies, corporate gateways, or self-hosted instances.
+    # ai-api-url: https://api.anthropic.com/v1/messages
+
+    # Optional. Override the API version header.
+    # Each provider has a built-in default — only change if you need to pin.
+    #   claude  → anthropic-version: 2023-06-01
+    #   copilot → api-version: 2024-10-01-preview
+    # ai-api-version: 2023-06-01
+
+    # Max tokens allowed in the AI response.
+    # 1024 is sufficient for a JSON array of insights.
     max-tokens: 1024
 
     # How often to run scheduled analysis, in seconds.
     # Default is 15 minutes — conservative to keep API costs low.
     # Thresholds below can still trigger earlier analysis between scheduled runs.
     interval-seconds: 900
+
+    # -----------------------------------------------------------------------
+    # Collectors — disable individual data sources if not needed.
+    # All enabled by default. Disabling a collector also disables its
+    # associated filter or AOP aspect — no wasted overhead.
+    # -----------------------------------------------------------------------
+    collectors:
+      jvm-enabled: true       # heap, threads, CPU, GC via Micrometer
+      latency-enabled: true   # per-endpoint latency via request filter
+      errors-enabled: true    # exception tracking via AOP
 
     # -----------------------------------------------------------------------
     # Thresholds — crossing any of these triggers early analysis immediately,
@@ -42,37 +74,29 @@ ai:
 
     # -----------------------------------------------------------------------
     # Prompt — all fields are optional.
-    # Unset fields fall back to the bundled defaults:
-    #   ai-observer/default-system-prompt.txt
-    #   ai-observer/default-user-template.txt
+    #
+    # The AI insight JSON contract (enforced by the built-in system prompt):
+    #   [
+    #     {
+    #       "level":          "INFO" | "WARNING" | "CRITICAL",
+    #       "message":        "Human-readable description of the finding",
+    #       "recommendation": "Concrete action to take"
+    #     }
+    #   ]
+    # The provider returns [] when everything looks healthy.
     #
     # Most users only need extra-context. Set it once and every future insight
     # will be specific to your application instead of generic JVM advice.
     # -----------------------------------------------------------------------
     prompt:
 
-      # Describe your application. Injected into every AI call.
-      # Leave empty if you don't need application-specific context.
-      extra-context: ""
+      # Optional. Prepended to the system prompt before the built-in response format.
+      # Use to tell the AI what kind of application it is monitoring.
+      # intro: "You are monitoring a high-frequency trading system. Prioritize latency above all else."
 
-      # Example:
+      # Optional. Appended to the user message after the snapshot JSON.
+      # Use to highlight what matters most for your specific application.
       # extra-context: |
       #   This is a payment processing service handling ~500 req/min.
       #   It uses PostgreSQL and Redis. Peak traffic is 9am–6pm UTC.
       #   Downtime during business hours is critical — flag anything latency-related.
-
-      # Override the system prompt entirely. Only needed if the bundled default
-      # does not fit your use case. See ai-observer/default-system-prompt.txt
-      # for the exact text that ships with the starter.
-      # system-prompt: |
-      #   You are a JVM expert for a high-frequency trading system.
-      #   Focus exclusively on latency outliers and GC pauses above 50ms.
-      #   Return JSON only: [{"level":"...","message":"...","recommendation":"..."}]
-
-      # Override the user message template. Use {snapshot} where the JSON
-      # snapshot should be inserted. See ai-observer/default-user-template.txt
-      # for the exact text that ships with the starter.
-      # user-template: |
-      #   Current state of our checkout service:
-      #   {snapshot}
-      #   Flag anything that could cause checkout failures or increased error rates.
